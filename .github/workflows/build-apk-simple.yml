@@ -1,0 +1,97 @@
+name: Build APK (simple)
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Unzip project
+        run: |
+          ZIP=$(ls vr_box_universal_launcher_v*.zip | sort -V | tail -1)
+          echo "Using $ZIP"
+          unzip -q "$ZIP" -d work
+          PROJ=$(dirname "$(find "$PWD/work" -maxdepth 2 -name project.godot | head -1)")
+          echo "Project folder: $PROJ"
+          echo "PROJ=$PROJ" >> "$GITHUB_ENV"
+          sed -i '/editor_plugins/d;/vr_launcher_export/d' "$PROJ/project.godot"
+      - name: Android SDK packages
+        run: |
+          SDK=${ANDROID_HOME:-/usr/local/lib/android/sdk}
+          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$SDK/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "build-tools;34.0.0" "platforms;android-34"
+      - uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.3.0
+          use-dotnet: false
+          include-templates: true
+      - name: Godot editor settings and debug keystore
+        run: |
+          SDK=${ANDROID_HOME:-/usr/local/lib/android/sdk}
+          keytool -genkeypair -v -keystore "$HOME/debug.keystore" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          mkdir -p "$HOME/.config/godot"
+          cat > "$HOME/.config/godot/editor_settings-4.3.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "$SDK"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          export/android/debug_keystore = "$HOME/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
+          EOF
+      - name: Export preset (no Gradle)
+        run: |
+          cat > "$PROJ/export_presets.cfg" <<'EOF'
+          [preset.0]
+
+          name="Android"
+          platform="Android"
+          runnable=true
+          advanced_options=true
+          dedicated_server=false
+          custom_features=""
+          export_filter="all_resources"
+          include_filter=""
+          exclude_filter=""
+          export_path="build/VRBoxLauncher.apk"
+          encryption_include_filters=""
+          encryption_exclude_filters=""
+          encrypt_pck=false
+          encrypt_directory=false
+
+          [preset.0.options]
+
+          custom_template/debug=""
+          custom_template/release=""
+          gradle_build/use_gradle_build=false
+          architectures/armeabi-v7a=false
+          architectures/arm64-v8a=true
+          architectures/x86=false
+          architectures/x86_64=false
+          version/code=1
+          version/name="1.0"
+          package/unique_name="org.vrlauncher.box"
+          package/name="VR Box Launcher"
+          package/signed=true
+          package/app_category=2
+          screen/immersive_mode=true
+          permissions/internet=true
+          permissions/access_network_state=true
+          permissions/query_all_packages=true
+          EOF
+      - name: Export APK
+        run: |
+          cd "$PROJ"
+          mkdir -p build
+          godot --headless --path . --import || true
+          godot --headless --path . --export-debug "Android" build/VRBoxLauncher.apk
+          ls -la build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VRBoxLauncher-apk
+          path: ${{ env.PROJ }}/build/*.apk
