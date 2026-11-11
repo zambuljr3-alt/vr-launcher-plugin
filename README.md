@@ -111,16 +111,7 @@ Target perbaikan:
 - Mendukung tampilan stereoskopik VR.
 - Memastikan Cinema Mode bisa digunakan, bukan hanya tombol atau menu kosong.
 
-6. 🌐 BROWSER & ENTERTAINMENT
-
-- Built-in Web Browser.
-- YouTube Web.
-- YouTube Shorts navigation.
-- Swipe up/down.
-- Touch gesture.
-- Menampilkan konten web di layar virtual VR.
-
-7. 🎮 UNIVERSAL CONTROLLER
+6. 🎮 UNIVERSAL CONTROLLER
 
 - Bluetooth Gamepad.
 - Gaze Navigation.
