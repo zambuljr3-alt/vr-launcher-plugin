@@ -42,12 +42,9 @@ Latest Version: V29
 
 🚀 Installation
 
-1. Download the project or APK from Releases.
-2. Extract the project ZIP if downloading the source.
-3. Open the project in Godot 4.3.
-4. Configure Android export settings.
-5. Build the APK.
-6. Install it on your Android device.
+1. Download the  APK from Releases.
+2. Extract the  ZIP if there is the source.
+3. And play
 
 📌 Project Information
 
