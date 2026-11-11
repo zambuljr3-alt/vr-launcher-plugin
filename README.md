@@ -61,11 +61,5 @@ Latest Version: V29
 
 Some features may require additional Android permissions, native plugin integration, or compatible hardware. Feature availability depends on the device and application.
 
-📂 GitHub Repository
-
-https://github.com/zambuljr3-alt/vr-launcher-plugin
-
----
-
 VR BOX UNIVERSAL LAUNCHER V29
 Explore a new dimension of mobile VR.
